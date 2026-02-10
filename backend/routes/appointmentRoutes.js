@@ -929,7 +929,6 @@ router.get("/action/approve", async (req, res) => {
     const user = await User.findById(appt.patientId);
     if (user && user.email) {
       const mailOptions = {
-        from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: "Appointment Approved – Samyak Ayurvedic Hospital",
         html: `
@@ -940,7 +939,8 @@ router.get("/action/approve", async (req, res) => {
                 <p style="margin-top:25px; color:#888; font-size:13px;">Warm Regards,<br>Dr. Rajan Karangiya</p>
               </div>`
       };
-      sendEmail(user.email, "Appointment Approved – Samyak Ayurvedic Hospital", mailOptions.html);
+      sendEmail(user.email, "Appointment Approved – Samyak Ayurvedic Hospital", mailOptions.html)
+        .catch(err => console.error("Async approval email failed:", err));
     }
 
     res.send(`
@@ -989,12 +989,12 @@ router.get("/action/reject", async (req, res) => {
     const user = await User.findById(appt.patientId);
     if (user && user.email) {
       const mailOptions = {
-        from: `"Samyak Hospital" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: "Appointment Update – Samyak Ayurvedic Hospital",
         html: `<p>Hi ${user.firstName}, we regret to inform you that your appointment request for ${new Date(appt.date).toLocaleDateString()} at ${appt.time} has been declined due to a schedule conflict. Please try booking another slot.</p>`
       };
-      sendEmail(user.email, mailOptions.subject, mailOptions.html);
+      sendEmail(user.email, mailOptions.subject, mailOptions.html)
+        .catch(err => console.error("Async rejection email failed:", err));
     }
 
     res.send(`

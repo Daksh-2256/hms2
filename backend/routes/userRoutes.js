@@ -182,6 +182,12 @@ router.post("/register-init", async (req, res) => {
       await sendOtp(email, otp);
     } catch (e) {
       console.error("Failed to send OTP:", e);
+      // Remove temporary user if email fails (optional but clean)
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        success: false,
+        message: "Email sending failed. Please check the email address."
+      });
     }
 
     res.json({
@@ -297,6 +303,10 @@ router.post("/resend-otp", async (req, res) => {
       await sendOtp(email, otp);
     } catch (e) {
       console.error("Failed to send OTP:", e);
+      return res.status(500).json({
+        success: false,
+        message: "Email sending failed."
+      });
     }
 
     res.json({
@@ -537,8 +547,8 @@ router.post("/invite", auth, async (req, res) => {
 
     // Create new user
     user = new User({
-      firstName, lastName, 
-      email: finalEmail, 
+      firstName, lastName,
+      email: finalEmail,
       phone, age, gender,
       role: 'patient',
       isPlaceholderEmail: isPlaceholder,
@@ -553,8 +563,8 @@ router.post("/invite", auth, async (req, res) => {
     await user.save();
 
     if (isPlaceholder) {
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: "Patient created with placeholder email",
         user: { id: user._id, email: user.email }
       });
@@ -566,7 +576,8 @@ router.post("/invite", auth, async (req, res) => {
       await sendActivation(finalEmail, token, req.headers.host);
       res.json({ success: true, message: "Invitation sent" });
     } catch (e) {
-      res.json({ success: true, message: "Patient created but failed to send email" });
+      console.error("Invitation email failed:", e);
+      res.status(500).json({ success: false, message: "Patient created but failed to send email. Please update email later." });
     }
 
   } catch (e) {
@@ -581,7 +592,7 @@ router.put("/update-email/:id", auth, async (req, res) => {
     if (req.user.role !== 'doctor' && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
-    
+
     const { email } = req.body;
     if (!email) return res.json({ success: false, message: "Valid email required" });
 
@@ -590,7 +601,7 @@ router.put("/update-email/:id", auth, async (req, res) => {
 
     // Validate new email format
     if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-       return res.json({ success: false, message: "Invalid email format" });
+      return res.json({ success: false, message: "Invalid email format" });
     }
 
     // Reject if email exists
@@ -599,7 +610,7 @@ router.put("/update-email/:id", auth, async (req, res) => {
 
     // Reject if equals placeholder format (patient_xxxxxx@hospital.local)
     if (email.toLowerCase().endsWith("@hospital.local") && email.toLowerCase().startsWith("patient_")) {
-        return res.json({ success: false, message: "Invalid email format" });
+      return res.json({ success: false, message: "Invalid email format" });
     }
 
     user.email = email;
@@ -619,11 +630,11 @@ router.put("/update-email/:id", auth, async (req, res) => {
       const sendActivation = require('../utils/sendActivation');
       await sendActivation(email, token, req.headers.host);
     } catch (e) {
-       console.error("Failed to send activation email after update:", e);
+      console.error("Failed to send activation email after update:", e);
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: "Patient email updated and invitation sent",
       user: { id: user._id, email: user.email }
     });
@@ -651,10 +662,14 @@ router.post("/resend-activation", auth, async (req, res) => {
     user.activationTokenExpiry = Date.now() + 24 * 3600 * 1000;
     await user.save();
 
-    const sendActivation = require('../utils/sendActivation');
-    await sendActivation(email, token, req.headers.host);
-
-    res.json({ success: true, message: "Activation email resent" });
+    try {
+      const sendActivation = require('../utils/sendActivation');
+      await sendActivation(email, token, req.headers.host);
+      res.json({ success: true, message: "Activation email resent" });
+    } catch (e) {
+      console.error("Resend activation failed:", e);
+      return res.status(500).json({ success: false, message: "Failed to send activation email." });
+    }
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });
@@ -669,7 +684,7 @@ router.post("/send-activation-otp", async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) return res.json({ success: false, message: "No patient record found. Please contact hospital staff." });
-    
+
     if (user.status === 'ACTIVE') return res.json({ success: false, message: "Account already activated. Please login." });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -677,10 +692,14 @@ router.post("/send-activation-otp", async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    const sendOtp = require("../utils/sendOtp");
-    await sendOtp(email, otp);
-
-    res.json({ success: true, message: "OTP sent to email." });
+    try {
+      const sendOtp = require("../utils/sendOtp");
+      await sendOtp(email, otp);
+      res.json({ success: true, message: "OTP sent to email." });
+    } catch (e) {
+      console.error("Activation OTP failed:", e);
+      return res.status(500).json({ success: false, message: "Failed to send OTP." });
+    }
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });
@@ -704,9 +723,9 @@ router.get("/verify-activation", async (req, res) => {
       return res.json({ success: false, message: "Account already activated", alreadyActive: true });
     }
 
-    res.json({ 
-      success: true, 
-      message: "Token valid", 
+    res.json({
+      success: true,
+      message: "Token valid",
       email: user.email,
       status: user.status
     });
@@ -758,9 +777,9 @@ router.post("/set-password", async (req, res) => {
 
     if (!user) return res.json({ success: false, message: "User not found" });
     if (user.status !== 'VERIFIED' && user.status !== 'INVITED') {
-        // We allow INVITED if they bypassed OTP somehow but rule says check VERIFIED
-        // Actually follow the rules: if (status === VERIFIED)
-        if (user.status !== 'VERIFIED') return res.json({ success: false, message: "Please verify OTP first." });
+      // We allow INVITED if they bypassed OTP somehow but rule says check VERIFIED
+      // Actually follow the rules: if (status === VERIFIED)
+      if (user.status !== 'VERIFIED') return res.json({ success: false, message: "Please verify OTP first." });
     }
 
     user.password = password;

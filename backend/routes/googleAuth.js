@@ -79,10 +79,14 @@ router.post("/send-otp", async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    const sendOtp = require("../utils/sendOtp");
-    await sendOtp(email, otp);
-
-    res.json({ success: true, message: "OTP sent successfully" });
+    try {
+      const sendOtp = require("../utils/sendOtp");
+      await sendOtp(email, otp);
+      res.json({ success: true, message: "OTP sent successfully" });
+    } catch (e) {
+      console.error("FATAL: Failed to send OTP:", e);
+      return res.status(500).json({ success: false, message: "Failed to send OTP email." });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });

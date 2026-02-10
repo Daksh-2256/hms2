@@ -682,24 +682,37 @@ router.post("/send-activation-otp", async (req, res) => {
     const { email } = req.body;
     if (!email) return res.json({ success: false, message: "Email required" });
 
+    // 1. Find patient by email
     const user = await User.findOne({ email });
     if (!user) return res.json({ success: false, message: "No patient record found. Please contact hospital staff." });
 
     if (user.status === 'ACTIVE') return res.json({ success: false, message: "Account already activated. Please login." });
 
+    // 2. Generate OTP (same as forgot-password)
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Save OTP and expiry
     user.otp = otp;
-    user.otpExpiry = Date.now() + 10 * 60 * 1000;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
     await user.save();
 
+    // 4. Send email using sendEmail function
     try {
-      const sendOtp = require("../utils/sendOtp");
-      await sendOtp(email, otp);
+      const sendEmail = require("../utils/email");
+      await sendEmail(
+        user.email,
+        "Account Activation OTP",
+        `<h2>Your OTP is: ${otp}</h2><p>This code expires in 10 minutes.</p>`
+      );
       res.json({ success: true, message: "OTP sent to email." });
     } catch (e) {
-      console.error("Activation OTP failed:", e);
-      return res.status(500).json({ success: false, message: "OTP failed: " + (e.message || "Unknown error") });
+      console.error("Activation email error:", e);
+      return res.status(500).json({
+        success: false,
+        message: "Activation email failed: " + (e.message || "Unknown error")
+      });
     }
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "Server error" });

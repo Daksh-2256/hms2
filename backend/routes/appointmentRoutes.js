@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 
 // Email Configuration
 // Email Configuration
-const { sendEmail } = require("../utils/email");
+const sendEmail = require("../utils/email");
 
 // GET /api/appointments/slots?date=YYYY-MM-DD - Get booked slots for a date
 // GET /api/appointments/slots?date=YYYY-MM-DD

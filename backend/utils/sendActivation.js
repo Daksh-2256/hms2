@@ -1,4 +1,4 @@
-const { sendEmail } = require("./email");
+const sendEmail = require("./email");
 
 module.exports = async (email, token, host) => {
   // Construct activation link

@@ -10,7 +10,9 @@ require("./jobs/reminderCron"); // Start Reminder Job
 const app = express();
 
 // Connect to DB
+// Connect to DB
 connectDB();
+console.log("Resend key loaded:", process.env.RESEND_API_KEY ? "YES" : "NO");
 
 app.use(
   express.json({

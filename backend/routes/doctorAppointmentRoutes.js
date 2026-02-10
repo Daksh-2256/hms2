@@ -4,7 +4,7 @@ const Appointment = require("../models/Appointment");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
 // Email Transporter
-const { sendEmail } = require("../utils/email");
+const sendEmail = require("../utils/email");
 
 // 1️⃣ Doctor: Fetch Appointments
 // GET /api/doctor/appointments?date=YYYY-MM-DD

@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
-const { sendEmail } = require("../utils/email");
+const sendEmail = require("../utils/email");
 
 // Run every 30 minutes
 // Cron format: minute hour day month day-of-week

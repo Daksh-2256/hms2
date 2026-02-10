@@ -1,12 +1,6 @@
 const { Resend } = require('resend');
 
-// Temporary: Check if key is loaded (remove in production if needed, but useful for debugging now)
-if (!process.env.RESEND_API_KEY) {
-  console.error("❌ FATAL: RESEND_API_KEY is missing in environment variables!");
-} else {
-  console.log("✅ RESEND_API_KEY loaded:", process.env.RESEND_API_KEY.substring(0, 5) + "...");
-}
-
+// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
@@ -19,26 +13,25 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  */
 const sendEmail = async (to, subject, html, attachments = []) => {
   try {
-    const data = await resend.emails.send({
-      from: 'Samyak Ayurvedic Hospital <onboarding@resend.dev>', // Default Resend sender for free tier
+    const response = await resend.emails.send({
+      from: 'Samyak Ayurvedic Hospital <onboarding@resend.dev>', // Default Resend sender
       to: [to],
       subject: subject,
       html: html,
       attachments: attachments
     });
 
-    if (data.error) {
-      console.error("❌ Resend Email Failed:", data.error);
-      throw new Error(`Email sending failed: ${data.error.message}`);
+    if (response.error) {
+      console.error("❌ Resend Email Failed:", response.error);
+      throw new Error(`Email sending failed: ${response.error.message}`);
     }
 
     console.log("✅ Email sent successfully via Resend to:", to);
-    return data;
+    return response;
   } catch (error) {
-    console.error("❌ Email send FAILED:", error);
-    // Throw a clean error message that can be sent to client
+    console.error("❌ Resend error:", error);
     throw new Error(`Email sending failed: ${error.message}`);
   }
 };
 
-module.exports = { sendEmail };
+module.exports = sendEmail;

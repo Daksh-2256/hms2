@@ -186,7 +186,7 @@ router.post("/register-init", async (req, res) => {
       await User.findByIdAndDelete(user._id);
       return res.status(500).json({
         success: false,
-        message: "Email sending failed. Please check the email address."
+        message: "Patient created but failed to send email"
       });
     }
 

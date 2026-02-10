@@ -12,7 +12,7 @@ const app = express();
 // Connect to DB
 // Connect to DB
 connectDB();
-console.log("Resend key loaded:", process.env.RESEND_API_KEY ? "YES" : "NO");
+console.log("Resend key:", process.env.RESEND_API_KEY);
 
 app.use(
   express.json({

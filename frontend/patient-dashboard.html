@@ -1140,6 +1140,7 @@
         /* Hide text on very small screens if needed, or keep it */
       }
     }
+
     .avatar-circle {
       background-color: #1F6B4F;
       color: #FFFFFF;
@@ -1357,7 +1358,7 @@
 
   <script>
     // Use relative path for API to ensure it works on localhost and production
-    const API = "http://localhost:5001";
+    const API = "https://hms2-production.up.railway.app";
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -2814,8 +2815,7 @@
             style="flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: #1e293b; padding: 8px 0;">
           <button onclick="sendHelpMessage()"
             style="background: #1F6B4F; border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;"
-            onmouseover="this.style.background='#185741'"
-            onmouseout="this.style.background='#1F6B4F'">
+            onmouseover="this.style.background='#185741'" onmouseout="this.style.background='#1F6B4F'">
             <span style="font-size: 16px;">➔</span>
           </button>
         </div>
@@ -2991,17 +2991,24 @@
   </div>
 
   <div class="modal-backdrop" id="logoutModalBackdrop">
-    <div class="modal-container" style="max-width: 360px; text-align: center; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+    <div class="modal-container"
+      style="max-width: 360px; text-align: center; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
       <div class="modal-body" style="padding: 40px 32px;">
-        <h3 style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; border: none; padding: 0; margin-top: 0;">Confirm Logout</h3>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 32px; line-height: 1.5; margin-top: 0;">Are you sure you want to log out?</p>
+        <h3
+          style="margin-bottom: 12px; color: #1a202c; font-size: 20px; font-weight: 700; border: none; padding: 0; margin-top: 0;">
+          Confirm Logout</h3>
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 32px; line-height: 1.5; margin-top: 0;">Are you sure
+          you want to log out?</p>
         <div style="display: flex; gap: 12px; justify-content: center;">
-          <button style="flex: 1; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; margin-top: 0;" 
-                  onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'"
-                  onclick="executeLogout()">Logout</button>
-          <button style="flex: 1; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; margin-top: 0;" 
-                  onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'"
-                  onclick="closeLogoutModal()">Cancel</button>
+          <button
+            style="flex: 1; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; margin-top: 0;"
+            onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'"
+            onclick="executeLogout()">Logout</button>
+          <button
+            style="flex: 1; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; margin-top: 0;"
+            onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'"
+            onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'"
+            onclick="closeLogoutModal()">Cancel</button>
         </div>
       </div>
     </div>

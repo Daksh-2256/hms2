@@ -3,16 +3,8 @@ const router = express.Router();
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
-const nodemailer = require("nodemailer");
-
 // Email Transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const { sendEmail } = require("../utils/email");
 
 // 1️⃣ Doctor: Fetch Appointments
 // GET /api/doctor/appointments?date=YYYY-MM-DD
@@ -44,16 +36,16 @@ router.get("/", auth, async (req, res) => {
           $ne: 'Cancelled'
         },
         $or: [{
-            date: {
-              $gte: start,
-              $lte: end
-            }
-          },
-          {
-            status: {
-              $regex: /^pending$/i
-            }
-          } // Case-insensitive Pending check
+          date: {
+            $gte: start,
+            $lte: end
+          }
+        },
+        {
+          status: {
+            $regex: /^pending$/i
+          }
+        } // Case-insensitive Pending check
         ]
       };
     } else {
@@ -206,26 +198,16 @@ router.patch("/:id/approve", auth, async (req, res) => {
 
       // Email to Patient (async-safe)
       try {
-        await transporter.sendMail({
-          from: `Samyak Ayurvedic Hospital <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
+        await sendEmail(user.email, emailSubject, emailHtml);
         console.log("Approval email sent to patient:", user.email);
       } catch (emailErr) {
         console.error("Patient Email Error:", emailErr);
       }
 
       // Email to Doctor (confirmation copy - async-safe)
-      const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+      const doctorEmail = process.env.DOCTOR_EMAIL || "daxkarangiya@gmail.com";
       try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR COPY] ${emailSubject}`,
-          html: `<p>FYI: You have approved an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
-        });
+        await sendEmail(doctorEmail, `[DOCTOR COPY] ${emailSubject}`, `<p>FYI: You have approved an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`);
         console.log("Approval copy sent to doctor");
       } catch (emailErr) {
         console.error("Doctor Email Error:", emailErr);
@@ -301,26 +283,16 @@ router.patch("/:id/reject", auth, async (req, res) => {
 
       // Email to Patient (async-safe)
       try {
-        await transporter.sendMail({
-          from: `Samyak Ayurvedic Hospital <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: emailSubject,
-          html: emailHtml
-        });
+        await sendEmail(user.email, emailSubject, emailHtml);
         console.log("Rejection email sent to patient:", user.email);
       } catch (emailErr) {
         console.error("Patient Email Error:", emailErr);
       }
 
       // Email to Doctor (confirmation copy - async-safe)
-      const doctorEmail = process.env.DOCTOR_EMAIL || process.env.EMAIL_USER;
+      const doctorEmail = process.env.DOCTOR_EMAIL || "daxkarangiya@gmail.com";
       try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: doctorEmail,
-          subject: `[DOCTOR COPY] ${emailSubject}`,
-          html: `<p>FYI: You have rejected an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`
-        });
+        await sendEmail(doctorEmail, `[DOCTOR COPY] ${emailSubject}`, `<p>FYI: You have rejected an appointment for <strong>${appt.patientName || user.firstName || 'Patient'}</strong>.</p><br>${emailHtml}`);
         console.log("Rejection copy sent to doctor");
       } catch (emailErr) {
         console.error("Doctor Email Error:", emailErr);

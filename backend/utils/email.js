@@ -1,50 +1,35 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verify transporter on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Email transporter verification FAILED:", error.message);
-  } else {
-    console.log("✅ Email transporter is ready to send messages");
-  }
-});
-
-// Wrapper function for sending emails with better logging
-transporter.sendMailWithLog = async (mailOptions) => {
-  // Ensure proper headers for deliverability
-  const enhancedOptions = {
-    ...mailOptions,
-    from: mailOptions.from || `"Samyak Ayurvedic Hospital" <${process.env.EMAIL_USER}>`,
-    replyTo: process.env.EMAIL_USER,
-    headers: {
-      'X-Priority': '1',
-      'X-Mailer': 'Samyak Hospital System'
-    }
-  };
-
+/**
+ * Send an email using Resend
+ * @param {string} to - Recipient email
+ * @param {string} subject - Email subject
+ * @param {string} html - Email body (HTML)
+ * @returns {Promise<Object>} - Resend API response
+ */
+const sendEmail = async (to, subject, html, attachments = []) => {
   try {
-    const info = await transporter.sendMail(enhancedOptions);
-    console.log("📧 Email sent successfully:");
-    console.log("   To:", enhancedOptions.to);
-    console.log("   Subject:", enhancedOptions.subject);
-    console.log("   MessageId:", info.messageId);
-    console.log("   Response:", info.response);
-    return info;
-  } catch (err) {
-    console.error("❌ Email send FAILED:");
-    console.error("   To:", enhancedOptions.to);
-    console.error("   Subject:", enhancedOptions.subject);
-    console.error("   Error:", err.message);
-    throw err;
+    const data = await resend.emails.send({
+      from: 'Samyak Ayurvedic Hospital <onboarding@resend.dev>', // Default Resend sender
+      to: [to],
+      subject: subject,
+      html: html,
+      attachments: attachments
+    });
+
+    if (data.error) {
+      console.error("❌ Resend Email Failed:", data.error);
+      throw new Error(data.error.message);
+    }
+
+    console.log("✅ Email sent successfully via Resend to:", to);
+    return data;
+  } catch (error) {
+    console.error("❌ Email send FAILED:", error);
+    throw error;
   }
 };
 
-module.exports = transporter;
+module.exports = { sendEmail };

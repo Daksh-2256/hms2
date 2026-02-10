@@ -1,19 +1,12 @@
 require("dotenv").config();
-const nodemailer = require("nodemailer");
+const { sendEmail } = require("./utils/email");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+(async () => {
+  try {
+    // sending to self as per Resend free tier restriction
+    await sendEmail("dakshk5610@gmail.com", "TEST EMAIL FROM RESEND", "<p>If you receive this, Resend integration works!</p>");
+    console.log("EMAIL SENT");
+  } catch (err) {
+    console.error("EMAIL ERROR:", err);
   }
-});
-
-transporter.sendMail({
-  from: process.env.EMAIL_USER,
-  to: "samarth05012006@gmail.com",
-  subject: "TEST EMAIL",
-  text: "If you receive this, email works"
-})
-.then(() => console.log("EMAIL SENT"))
-.catch(err => console.error("EMAIL ERROR:", err));
+})();

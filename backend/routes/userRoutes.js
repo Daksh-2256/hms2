@@ -186,7 +186,7 @@ router.post("/register-init", async (req, res) => {
       await User.findByIdAndDelete(user._id);
       return res.status(500).json({
         success: false,
-        message: "Patient created but failed to send email"
+        message: "Patient created but failed to send email: " + (e.message || "Unknown error")
       });
     }
 
@@ -305,7 +305,7 @@ router.post("/resend-otp", async (req, res) => {
       console.error("Failed to send OTP:", e);
       return res.status(500).json({
         success: false,
-        message: "Email sending failed."
+        message: "Email sending failed: " + (e.message || "Unknown error")
       });
     }
 
@@ -577,7 +577,7 @@ router.post("/invite", auth, async (req, res) => {
       res.json({ success: true, message: "Invitation sent" });
     } catch (e) {
       console.error("Invitation email failed:", e);
-      res.status(500).json({ success: false, message: "Patient created but failed to send email. Please update email later." });
+      res.status(500).json({ success: false, message: "Invitation email failed: " + (e.message || "Unknown error") });
     }
 
   } catch (e) {
@@ -668,7 +668,7 @@ router.post("/resend-activation", auth, async (req, res) => {
       res.json({ success: true, message: "Activation email resent" });
     } catch (e) {
       console.error("Resend activation failed:", e);
-      return res.status(500).json({ success: false, message: "Failed to send activation email." });
+      return res.status(500).json({ success: false, message: "Activation email failed: " + (e.message || "Unknown error") });
     }
   } catch (e) {
     console.error(e);
@@ -698,7 +698,7 @@ router.post("/send-activation-otp", async (req, res) => {
       res.json({ success: true, message: "OTP sent to email." });
     } catch (e) {
       console.error("Activation OTP failed:", e);
-      return res.status(500).json({ success: false, message: "Failed to send OTP." });
+      return res.status(500).json({ success: false, message: "OTP failed: " + (e.message || "Unknown error") });
     }
   } catch (e) {
     console.error(e);

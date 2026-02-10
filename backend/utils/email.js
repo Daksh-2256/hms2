@@ -11,7 +11,12 @@ async function sendEmail(to, subject, html, attachments = []) {
       attachments: attachments
     });
 
-    console.log("Email sent:", response);
+    if (response.error) {
+      console.error("Resend API Error:", response.error);
+      throw new Error(response.error.message || "Failed to send email");
+    }
+
+    console.log("Email sent successfully:", response.data);
     return response;
   } catch (error) {
     console.error("Resend error:", error);

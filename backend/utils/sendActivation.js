@@ -2,7 +2,16 @@ const sendEmail = require("./email");
 
 module.exports = async (email, token, host) => {
   // Construct activation link
-  const baseUrl = process.env.FRONTEND_URL || 'https://hms2-production.up.railway.app';
+  // Construct activation link
+  let baseUrl = process.env.FRONTEND_URL;
+  if (!baseUrl) {
+    if (host) {
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      baseUrl = `${protocol}://${host}`;
+    } else {
+      baseUrl = 'https://hms2-production.up.railway.app';
+    }
+  }
   const link = `${baseUrl}/activate.html?token=${token}&email=${email}`;
 
   const html = `

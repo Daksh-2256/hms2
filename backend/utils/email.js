@@ -12,15 +12,16 @@ const transporter = nodemailer.createTransport({
   connectionTimeout: 10000, // 10 seconds
   greetingTimeout: 10000,
   socketTimeout: 10000
-}); 
+});
 
-async function sendEmail(to, subject, html) {
+async function sendEmail(to, subject, html, attachments = []) {
   try {
     const info = await transporter.sendMail({
       from: `"Hospital" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
-      html: html
+      html: html,
+      attachments: attachments
     });
 
     console.log("Email sent:", info.response);

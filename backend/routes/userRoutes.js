@@ -579,6 +579,7 @@ router.post("/invite", auth, async (req, res) => {
     }
 
     return res.status(201).json({
+      success: true, // Crucial for frontend
       message: "Patient created successfully",
       patient: user
     });
@@ -715,6 +716,7 @@ router.post("/send-activation-otp", async (req, res) => {
     }
 
     return res.json({
+      success: true, // Crucial for frontend
       message: "OTP sent (or email temporarily unavailable)"
     });
 

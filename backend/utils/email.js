@@ -5,8 +5,14 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
-});
+  },
+  tls: {
+    rejectUnauthorized: false // Helps with some self-signed cert issues or strict firewalls
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000
+}); 
 
 async function sendEmail(to, subject, html) {
   try {

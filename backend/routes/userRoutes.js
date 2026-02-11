@@ -574,15 +574,14 @@ router.post("/invite", auth, async (req, res) => {
     try {
       const sendActivation = require('../utils/sendActivation');
       await sendActivation(finalEmail, token, req.headers.host);
-      res.json({ success: true, message: "Invitation sent" });
     } catch (e) {
-      console.error("Invitation email failed:", e);
-      // Don't swallow the error for now, let frontend know
-      res.status(500).json({
-        success: false,
-        message: "Patient created but failed to send email: " + (e.message || "Twilio/Resend error")
-      });
+      console.error("Invitation email failed:", e.message);
     }
+
+    return res.status(201).json({
+      message: "Patient created successfully",
+      patient: user
+    });
 
   } catch (e) {
     console.error("Server error at /invite:", e);
@@ -711,14 +710,13 @@ router.post("/send-activation-otp", async (req, res) => {
         "Account Activation OTP",
         `<h2>Your OTP is: ${otp}</h2><p>This code expires in 10 minutes.</p>`
       );
-      res.json({ success: true, message: "OTP sent to email." });
     } catch (e) {
-      console.error("Activation email error:", e);
-      return res.status(500).json({
-        success: false,
-        message: "Activation email failed: " + (e.message || "Unknown error")
-      });
+      console.error("Activation email error:", e.message);
     }
+
+    return res.json({
+      message: "OTP sent (or email temporarily unavailable)"
+    });
 
   } catch (e) {
     console.error(e);

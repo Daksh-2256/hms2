@@ -577,11 +577,15 @@ router.post("/invite", auth, async (req, res) => {
       res.json({ success: true, message: "Invitation sent" });
     } catch (e) {
       console.error("Invitation email failed:", e);
-      res.status(500).json({ success: false, message: "Invitation email failed: " + (e.message || "Unknown error") });
+      // Don't swallow the error for now, let frontend know
+      res.status(500).json({
+        success: false,
+        message: "Patient created but failed to send email: " + (e.message || "Twilio/Resend error")
+      });
     }
 
   } catch (e) {
-    console.error(e);
+    console.error("Server error at /invite:", e);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -668,10 +672,13 @@ router.post("/resend-activation", auth, async (req, res) => {
       res.json({ success: true, message: "Activation email resent" });
     } catch (e) {
       console.error("Resend activation failed:", e);
-      return res.status(500).json({ success: false, message: "Activation email failed: " + (e.message || "Unknown error") });
+      return res.status(500).json({
+        success: false,
+        message: "Activation email failed: " + (e.message || "Unknown error")
+      });
     }
   } catch (e) {
-    console.error(e);
+    console.error("Server error at /resend-activation:", e);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });

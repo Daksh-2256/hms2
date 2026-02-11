@@ -1,25 +1,26 @@
-const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY);
+const nodemailer = require("nodemailer");
 
-async function sendEmail(to, subject, html, attachments = []) {
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+async function sendEmail(to, subject, html) {
   try {
-    const response = await resend.emails.send({
-      from: "Hospital <onboarding@resend.dev>",
+    const info = await transporter.sendMail({
+      from: `"Hospital" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
-      html: html,
-      attachments: attachments
+      html: html
     });
 
-    if (response.error) {
-      console.error("Resend API Error:", response.error);
-      throw new Error(response.error.message || "Failed to send email");
-    }
-
-    console.log("Email sent successfully:", response.data);
-    return response;
+    console.log("Email sent:", info.response);
+    return info;
   } catch (error) {
-    console.error("Resend error:", error);
+    console.error("Email error:", error);
     throw error;
   }
 }
